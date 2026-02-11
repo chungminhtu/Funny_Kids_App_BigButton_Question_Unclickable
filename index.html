@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quiz Game 😄</title>
   <style>
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       height: 100vh;
@@ -16,33 +17,60 @@
       touch-action: manipulation;
     }
 
-    h1 {
+    /* MAIN GAME SCREEN - always visible */
+    h1#question {
       text-align: center;
-      font-size: 2.4rem;
-      margin: 30px 20px 5px;
+      font-size: 5rem;
+      margin: 0 20px;
       text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      line-height: 1.1;
+      position: absolute;
+      top: 35%;
+      left: 0;
+      right: 0;
+      transform: translateY(-50%);
     }
 
     #progress {
       text-align: center;
-      font-size: 1.2rem;
+      font-size: 1.6rem;
       opacity: 0.8;
       margin: 5px 0 0;
     }
 
-    .poll-container {
-      position: relative;
-      height: 60vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 40px;
+    #homeMessage {
+      text-align: center;
+      margin-top: 25vh;
+      padding: 0 30px;
+    }
+    #homeMessage h2 {
+      font-size: 3rem;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      margin-bottom: 10px;
+    }
+    #homeMessage p {
+      font-size: 1.4rem;
+      opacity: 0.8;
     }
 
+    .poll-container {
+      position: fixed;
+      top: 55%;
+      left: 0;
+      right: 0;
+      height: auto;
+      display: none;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 0 20px;
+    }
+    .poll-container.active { display: flex; }
+
     .option {
-      font-size: 2.2rem;
-      padding: 22px 60px;
+      font-size: 3.5rem;
+      padding: 30px 70px;
       border-radius: 60px;
       color: white;
       font-weight: bold;
@@ -50,9 +78,9 @@
       user-select: none;
       transition: all 0.15s;
       box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-      position: absolute;
+      position: relative;
       white-space: nowrap;
-      max-width: 80vw;
+      max-width: 42vw;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -72,73 +100,209 @@
 
     #counter {
       position: fixed;
-      bottom: 20px;
+      top: 15px;
       left: 50%;
       transform: translateX(-50%);
       font-size: 1.4rem;
       background: rgba(0,0,0,0.5);
       padding: 10px 25px;
       border-radius: 50px;
+      display: none;
     }
 
-    /* Setup screen */
-    #setup {
+    /* Bottom nav buttons - always visible on home */
+    .home-buttons {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      padding: 0 20px;
+      z-index: 50;
+    }
+    .home-btn {
+      font-size: 1.4rem;
+      padding: 16px 36px;
+      border-radius: 50px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      transition: transform 0.15s;
+    }
+    .home-btn:active { transform: scale(0.95); }
+    #playBtn {
+      background: #00ff9d;
+      color: black;
+    }
+    #manageBtn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      backdrop-filter: blur(8px);
+      border: 2px solid rgba(255,255,255,0.4);
+    }
+
+    /* QUESTION MANAGER OVERLAY */
+    #manager {
       position: fixed;
       inset: 0;
       background: linear-gradient(135deg, #667eea, #764ba2);
       z-index: 100;
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
-      padding: 30px 20px;
-      overflow-y: auto;
     }
+    #manager.open { display: flex; }
 
-    #setup h2 {
-      font-size: 2rem;
-      margin-bottom: 10px;
-    }
-
-    #setup p {
-      opacity: 0.8;
-      margin: 0 0 20px;
+    .setup-header {
       text-align: center;
-      max-width: 500px;
+      padding: 24px 20px 12px;
+      flex-shrink: 0;
+    }
+    .setup-header h2 {
+      font-size: 2rem;
+      margin: 0 0 6px;
+      text-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    }
+    .setup-header p {
+      opacity: 0.8;
+      margin: 0;
+      font-size: 1rem;
     }
 
-    #setup textarea {
-      width: min(90vw, 500px);
-      height: 40vh;
-      font-size: 1.1rem;
-      padding: 15px;
-      border-radius: 15px;
-      border: none;
-      font-family: monospace;
-      resize: vertical;
+    .card-list {
+      flex: 1;
+      overflow-y: auto;
+      width: 100%;
+      max-width: 540px;
+      padding: 8px 20px 120px;
     }
 
-    #startBtn {
-      margin-top: 20px;
-      font-size: 1.6rem;
-      padding: 15px 50px;
-      border-radius: 50px;
-      border: none;
-      background: #00ff9d;
-      color: black;
+    .q-card {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      border-left: 5px solid rgba(255,255,255,0.3);
+      animation: cardIn 0.3s ease-out;
+      position: relative;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .q-card .card-num {
+      font-size: 0.8rem;
+      opacity: 0.6;
+      margin-bottom: 8px;
       font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
     }
 
-    #useDefaultBtn {
-      margin-top: 12px;
-      font-size: 1.2rem;
-      padding: 10px 30px;
-      border-radius: 50px;
-      border: 2px solid white;
+    .q-card input {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      font-size: 1rem;
+      margin-bottom: 8px;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .q-card input:focus {
+      border-color: #a78bfa;
+    }
+    .q-card input.correct-input {
+      border-left: 4px solid #00c853;
+    }
+    .q-card input.wrong-input {
+      border-left: 4px solid #ff2d55;
+    }
+
+    .q-card .row {
+      display: flex;
+      gap: 8px;
+    }
+    .q-card .row input { flex: 1; margin-bottom: 0; }
+
+    .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .delete-btn:hover { background: rgba(255,60,80,0.6); }
+
+    .add-btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: 2px dashed rgba(255,255,255,0.4);
       background: transparent;
       color: white;
+      font-size: 1.1rem;
+      font-weight: bold;
       cursor: pointer;
+      transition: background 0.2s;
+    }
+    .add-btn:hover { background: rgba(255,255,255,0.1); }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(30,20,60,0.85);
+      backdrop-filter: blur(12px);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 101;
+    }
+    .bottom-bar .q-count {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+    .bottom-bar button {
+      font-size: 1.3rem;
+      padding: 12px 36px;
+      border-radius: 50px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .bottom-bar button:active { transform: scale(0.95); }
+    #saveBtn {
+      background: #00ff9d;
+      color: black;
+      box-shadow: 0 4px 15px rgba(0,255,157,0.3);
+    }
+    #closeManagerBtn {
+      background: rgba(255,255,255,0.2);
+      color: white;
     }
 
     /* Win screen */
@@ -156,12 +320,12 @@
     }
 
     #winScreen h2 {
-      font-size: 3rem;
+      font-size: 3.5rem;
       margin-bottom: 10px;
     }
 
     #winScreen p {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       opacity: 0.9;
     }
 
@@ -181,28 +345,40 @@
 </head>
 <body>
 
-  <!-- SETUP SCREEN -->
-  <div id="setup">
-    <h2>Enter Your Questions 📝</h2>
-    <p>One question per line. Format:<br><b>Question? | Correct Answer | Wrong Answer</b></p>
-    <textarea id="questionInput" placeholder="Which is the best LLM? | Grok | Others
-What color is the sky? | Blue | Green
-2 + 2 = ? | 4 | 5
-Capital of France? | Paris | London"></textarea>
-    <button id="startBtn">Start Game 🎮</button>
-    <button id="useDefaultBtn">Use Default Questions</button>
+  <!-- MAIN GAME SCREEN (always visible) -->
+  <div id="homeMessage">
+    <h2>Quiz Game 🎮</h2>
+    <p>Tap the correct answer to win!</p>
   </div>
 
-  <!-- GAME SCREEN -->
-  <h1 id="question"></h1>
-  <div id="progress"></div>
+  <h1 id="question" style="display:none"></h1>
+  <div id="progress" style="display:none"></div>
 
-  <div class="poll-container">
+  <div class="poll-container" id="pollContainer">
     <div id="correct" class="option"></div>
     <div id="wrong" class="option"></div>
   </div>
 
   <div id="counter">Taps: 0</div>
+
+  <div class="home-buttons" id="homeButtons">
+    <button class="home-btn" id="playBtn">Play 🎮</button>
+    <button class="home-btn" id="manageBtn">Questions ✏️</button>
+  </div>
+
+  <!-- QUESTION MANAGER OVERLAY -->
+  <div id="manager">
+    <div class="setup-header">
+      <h2>Manage Questions 📝</h2>
+      <p>Add, edit, or delete questions for your quiz!</p>
+    </div>
+    <div class="card-list" id="cardList"></div>
+    <div class="bottom-bar">
+      <span class="q-count" id="qCount">5 questions</span>
+      <button id="closeManagerBtn">Cancel</button>
+      <button id="saveBtn">Save & Close ✓</button>
+    </div>
+  </div>
 
   <!-- WIN SCREEN -->
   <div id="winScreen">
@@ -220,46 +396,160 @@ Capital of France? | Paris | London"></textarea>
       { question: "How many legs does a spider have?", correct: "8", wrong: "6" },
     ];
 
-    let questions = [];
+    let questions = [...defaultQuestions];
     let currentIndex = 0;
     let taps = 0;
     let correctSize = 1;
+    let wrongSize = 1;
+    let playing = false;
 
-    const setupEl = document.getElementById('setup');
-    const questionInput = document.getElementById('questionInput');
-    const startBtn = document.getElementById('startBtn');
-    const useDefaultBtn = document.getElementById('useDefaultBtn');
+    const homeMessage = document.getElementById('homeMessage');
     const questionEl = document.getElementById('question');
     const progressEl = document.getElementById('progress');
+    const pollContainer = document.getElementById('pollContainer');
     const correctBtn = document.getElementById('correct');
     const wrongBtn = document.getElementById('wrong');
     const counterEl = document.getElementById('counter');
+    const homeButtons = document.getElementById('homeButtons');
+    const playBtn = document.getElementById('playBtn');
+    const manageBtn = document.getElementById('manageBtn');
+    const manager = document.getElementById('manager');
+    const cardList = document.getElementById('cardList');
+    const qCount = document.getElementById('qCount');
+    const saveBtn = document.getElementById('saveBtn');
+    const closeManagerBtn = document.getElementById('closeManagerBtn');
     const winScreen = document.getElementById('winScreen');
     const winMessage = document.getElementById('winMessage');
     const playAgainBtn = document.getElementById('playAgainBtn');
 
-    function parseQuestions(text) {
-      const lines = text.trim().split('\n').filter(l => l.trim());
-      return lines.map(line => {
-        const parts = line.split('|').map(s => s.trim());
-        if (parts.length >= 3) {
-          return { question: parts[0], correct: parts[1], wrong: parts[2] };
-        } else if (parts.length === 2) {
-          return { question: parts[0], correct: parts[1], wrong: "Wrong!" };
-        }
-        return null;
-      }).filter(Boolean);
+    // --- Card Manager ---
+    function createCard(q, index) {
+      const card = document.createElement('div');
+      card.className = 'q-card';
+      card.innerHTML = `
+        <div class="card-num">Question ${index + 1}</div>
+        <button class="delete-btn" title="Delete">🗑</button>
+        <input type="text" class="question-input" placeholder="Question..." value="${escapeHtml(q.question)}">
+        <div class="row">
+          <input type="text" class="correct-input" placeholder="✓ Correct" value="${escapeHtml(q.correct)}">
+          <input type="text" class="wrong-input" placeholder="✗ Wrong" value="${escapeHtml(q.wrong)}">
+        </div>
+      `;
+      card.querySelector('.delete-btn').addEventListener('click', () => {
+        card.style.transition = 'opacity 0.2s, transform 0.2s';
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(-30px)';
+        setTimeout(() => { card.remove(); renumberCards(); }, 200);
+      });
+      return card;
     }
 
-    function startGame(qs) {
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function renumberCards() {
+      const cards = cardList.querySelectorAll('.q-card');
+      cards.forEach((c, i) => {
+        c.querySelector('.card-num').textContent = `Question ${i + 1}`;
+      });
+      updateCount();
+    }
+
+    function updateCount() {
+      const n = cardList.querySelectorAll('.q-card').length;
+      qCount.textContent = `${n} question${n !== 1 ? 's' : ''}`;
+    }
+
+    // Build the add button (lives inside card list)
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-btn';
+    addBtn.textContent = '+ Add Question';
+    addBtn.addEventListener('click', () => {
+      const index = cardList.querySelectorAll('.q-card').length;
+      const card = createCard({ question: '', correct: '', wrong: '' }, index);
+      cardList.insertBefore(card, addBtn);
+      updateCount();
+      card.querySelector('.question-input').focus();
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    cardList.appendChild(addBtn);
+
+    function populateCards(qs) {
+      // Remove existing cards but keep add button
+      cardList.querySelectorAll('.q-card').forEach(c => c.remove());
+      qs.forEach((q, i) => {
+        const card = createCard(q, i);
+        cardList.insertBefore(card, addBtn);
+      });
+      updateCount();
+    }
+
+    function collectQuestions() {
+      const cards = cardList.querySelectorAll('.q-card');
+      const qs = [];
+      cards.forEach(card => {
+        const q = card.querySelector('.question-input').value.trim();
+        const c = card.querySelector('.correct-input').value.trim();
+        const w = card.querySelector('.wrong-input').value.trim();
+        if (q && c && w) qs.push({ question: q, correct: c, wrong: w });
+      });
+      return qs;
+    }
+
+    // --- Manager open/close ---
+    function openManager() {
+      populateCards(questions);
+      manager.classList.add('open');
+    }
+
+    function closeManager() {
+      manager.classList.remove('open');
+    }
+
+    manageBtn.addEventListener('click', openManager);
+
+    closeManagerBtn.addEventListener('click', closeManager);
+
+    saveBtn.addEventListener('click', () => {
+      const qs = collectQuestions();
+      if (qs.length === 0) {
+        alert('Please add at least one complete question!');
+        return;
+      }
       questions = qs;
+      closeManager();
+    });
+
+    // --- Game ---
+    function startGame() {
+      if (questions.length === 0) {
+        alert('No questions! Tap "Questions" to add some.');
+        return;
+      }
+      playing = true;
       currentIndex = 0;
       taps = 0;
       correctSize = 1;
       counterEl.textContent = 'Taps: 0';
-      setupEl.style.display = 'none';
+      counterEl.style.display = 'block';
+      homeMessage.style.display = 'none';
+      homeButtons.style.display = 'none';
+      questionEl.style.display = 'block';
+      progressEl.style.display = 'block';
+      pollContainer.classList.add('active');
       winScreen.style.display = 'none';
       loadQuestion();
+    }
+
+    function endGame() {
+      playing = false;
+      counterEl.style.display = 'none';
+      questionEl.style.display = 'none';
+      progressEl.style.display = 'none';
+      pollContainer.classList.remove('active');
+      homeMessage.style.display = 'block';
+      homeButtons.style.display = 'flex';
     }
 
     function loadQuestion() {
@@ -269,14 +559,16 @@ Capital of France? | Paris | London"></textarea>
       correctBtn.textContent = q.correct;
       wrongBtn.textContent = q.wrong;
       correctSize = 1;
+      wrongSize = 1;
       correctBtn.style.transform = 'scale(1)';
+      wrongBtn.style.transform = 'scale(1)';
 
-      // Reset positions
+      correctBtn.style.position = 'relative';
       correctBtn.style.left = '';
       correctBtn.style.top = '';
-      wrongBtn.style.left = (window.innerWidth / 2 - 100) + 'px';
-      wrongBtn.style.top = (window.innerHeight / 2 + 80) + 'px';
-      wrongBtn.style.position = 'absolute';
+      wrongBtn.style.position = 'relative';
+      wrongBtn.style.left = '';
+      wrongBtn.style.top = '';
     }
 
     function getRandomPosition() {
@@ -287,53 +579,43 @@ Capital of France? | Paris | London"></textarea>
       return { x, y };
     }
 
-    // Wrong button — runs away
     wrongBtn.addEventListener('click', () => {
+      if (!playing) return;
       taps++;
       counterEl.textContent = `Taps: ${taps}`;
-
-      correctSize += 0.28;
+      correctSize += 0.6;
+      wrongSize = Math.max(0.1, wrongSize - 0.6);
       correctBtn.style.transform = `scale(${correctSize})`;
-
       const pos = getRandomPosition();
+      wrongBtn.style.position = 'fixed';
       wrongBtn.style.left = pos.x + 'px';
       wrongBtn.style.top = pos.y + 'px';
-      wrongBtn.style.position = 'absolute';
-
-      wrongBtn.style.transform = 'scale(1.2)';
-      setTimeout(() => {
-        wrongBtn.style.transform = 'scale(1)';
-      }, 120);
+      wrongBtn.style.transform = `scale(${wrongSize * 1.2})`;
+      setTimeout(() => { wrongBtn.style.transform = `scale(${wrongSize})`; }, 120);
     });
 
-    // Correct button — next question
     correctBtn.addEventListener('click', () => {
+      if (!playing) return;
       currentIndex++;
       if (currentIndex >= questions.length) {
-        // WIN!
         winMessage.textContent = `You answered all ${questions.length} questions with ${taps} wrong taps!`;
         winScreen.style.display = 'flex';
+        playing = false;
+        counterEl.style.display = 'none';
+        questionEl.style.display = 'none';
+        progressEl.style.display = 'none';
+        pollContainer.classList.remove('active');
       } else {
         loadQuestion();
       }
     });
 
-    startBtn.addEventListener('click', () => {
-      const parsed = parseQuestions(questionInput.value);
-      if (parsed.length === 0) {
-        alert('Please enter at least one question in the format:\nQuestion? | Correct | Wrong');
-        return;
-      }
-      startGame(parsed);
-    });
-
-    useDefaultBtn.addEventListener('click', () => {
-      startGame(defaultQuestions);
-    });
+    playBtn.addEventListener('click', startGame);
 
     playAgainBtn.addEventListener('click', () => {
-      setupEl.style.display = 'flex';
       winScreen.style.display = 'none';
+      homeMessage.style.display = 'block';
+      homeButtons.style.display = 'flex';
     });
   </script>
 
