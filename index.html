@@ -387,7 +387,8 @@
       { question: "How many legs does a spider have?", correct: "8", wrong: "6" },
     ];
 
-    let questions = [...defaultQuestions];
+    const saved = localStorage.getItem('quizQuestions');
+    let questions = saved ? JSON.parse(saved) : [...defaultQuestions];
     let currentIndex = 0;
     let taps = 0;
     let correctSize = 1;
@@ -510,6 +511,7 @@
         return;
       }
       questions = qs;
+      localStorage.setItem('quizQuestions', JSON.stringify(questions));
       closeManager();
     });
 
