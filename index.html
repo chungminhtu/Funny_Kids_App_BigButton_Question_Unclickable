@@ -380,11 +380,11 @@
 
   <script>
     const defaultQuestions = [
-      { question: "Which is the best LLM in the world?", correct: "Grok", wrong: "Others" },
-      { question: "What color is the sky?", correct: "Blue", wrong: "Green" },
-      { question: "2 + 2 = ?", correct: "4", wrong: "5" },
-      { question: "Which animal says 'Meow'?", correct: "Cat", wrong: "Dog" },
-      { question: "How many legs does a spider have?", correct: "8", wrong: "6" },
+      { question: "What color is the sky?", correct: "Blue", wrong: "Pink 🩷" },
+      { question: "2 + 2 = ?", correct: "4", wrong: "22 😂" },
+      { question: "Which animal says 'Meow'?", correct: "Cat 🐱", wrong: "Cow 🐮" },
+      { question: "How many legs does a spider have?", correct: "8", wrong: "100 🤪" },
+      { question: "What do fish live in?", correct: "Water 💧", wrong: "Pizza 🍕" },
     ];
 
     const saved = localStorage.getItem('quizQuestions');
@@ -556,6 +556,7 @@
       wrongBtn.style.position = 'relative';
       wrongBtn.style.left = '';
       wrongBtn.style.top = '';
+      wrongBtn.style.transform = 'scale(1)';
     }
 
     function getRandomPosition() {
@@ -566,26 +567,28 @@
       return { x, y };
     }
 
-    wrongBtn.addEventListener('click', () => {
+    // Correct button RUNS AWAY - kids can't click it!
+    correctBtn.addEventListener('click', () => {
       if (!playing) return;
       taps++;
 
-      correctSize += 0.6;
-      wrongSize = Math.max(0.1, wrongSize - 0.6);
-      correctBtn.style.transform = `scale(${correctSize})`;
+      wrongSize += 0.6;
+      correctSize = Math.max(0.1, correctSize - 0.6);
+      wrongBtn.style.transform = `scale(${wrongSize})`;
       const pos = getRandomPosition();
-      wrongBtn.style.position = 'fixed';
-      wrongBtn.style.left = pos.x + 'px';
-      wrongBtn.style.top = pos.y + 'px';
-      wrongBtn.style.transform = `scale(${wrongSize * 1.2})`;
-      setTimeout(() => { wrongBtn.style.transform = `scale(${wrongSize})`; }, 120);
+      correctBtn.style.position = 'fixed';
+      correctBtn.style.left = pos.x + 'px';
+      correctBtn.style.top = pos.y + 'px';
+      correctBtn.style.transform = `scale(${correctSize * 1.2})`;
+      setTimeout(() => { correctBtn.style.transform = `scale(${correctSize})`; }, 120);
     });
 
-    correctBtn.addEventListener('click', () => {
+    // Wrong button advances - kids are forced to pick this!
+    wrongBtn.addEventListener('click', () => {
       if (!playing) return;
       currentIndex++;
       if (currentIndex >= questions.length) {
-        winMessage.textContent = `You answered all ${questions.length} questions with ${taps} wrong taps!`;
+        winMessage.textContent = `You finished all ${questions.length} questions!`;
         winScreen.style.display = 'flex';
         playing = false;
         gameArea.classList.remove('active');
