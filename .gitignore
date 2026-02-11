@@ -20,3 +20,4 @@ electron-app/*.db-wal
 deployments-secrets.json
 wrangler-configs/
 **/.DS_Store
+.DS_Store
