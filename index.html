@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Best LLM? 😄</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      font-family: Arial, Helvetica, sans-serif;
+      overflow: hidden;
+      position: relative;
+      color: white;
+      touch-action: manipulation; /* better mobile tapping */
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 3.2rem;
+      margin: 40px 20px 10px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .poll-container {
+      position: relative;
+      height: 60vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    .option {
+      font-size: 2.4rem;
+      padding: 25px 80px;
+      border-radius: 60px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      position: absolute;
+      white-space: nowrap;
+    }
+
+    #grok {
+      background: #00ff9d;
+      color: black;
+      z-index: 5;
+      transform: scale(1);
+    }
+
+    #others {
+      background: #ff2d55;
+      z-index: 10;
+      transition: all 0.25s ease-out;
+    }
+
+    #counter {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.8rem;
+      background: rgba(0,0,0,0.5);
+      padding: 10px 25px;
+      border-radius: 50px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 id="question">Which is the best LLM in the world?</h1>
+
+  <div class="poll-container">
+    <div id="grok" class="option">Grok</div>
+    <div id="others" class="option">Others</div>
+  </div>
+
+  <div id="counter">Taps: 0</div>
+
+  <script>
+    const question = document.getElementById('question');
+    const grokBtn = document.getElementById('grok');
+    const othersBtn = document.getElementById('others');
+    const counter = document.getElementById('counter');
+
+    let taps = 0;
+    let grokSize = 1;
+
+    // ← Change the question here if you want
+    // question.textContent = "Which is the best ice cream?";
+
+    function getRandomPosition() {
+      const maxX = window.innerWidth - 280;  // rough button width
+      const maxY = window.innerHeight - 200;
+      const x = Math.random() * maxX;
+      const y = Math.random() * maxY;
+      return { x, y };
+    }
+
+    othersBtn.addEventListener('click', () => {
+      taps++;
+      counter.textContent = `Taps: ${taps}`;
+
+      // Make Grok bigger
+      grokSize += 0.28;  // how fast it grows — change this number if you want
+      grokBtn.style.transform = `scale(${grokSize})`;
+
+      // Move red button to random position
+      const pos = getRandomPosition();
+      othersBtn.style.left = pos.x + 'px';
+      othersBtn.style.top = pos.y + 'px';
+      othersBtn.style.position = 'absolute';
+
+      // Tiny shake + pop effect on red button
+      othersBtn.style.transform = 'scale(1.2)';
+      setTimeout(() => {
+        othersBtn.style.transform = 'scale(1)';
+      }, 120);
+    });
+
+    // Start red button in center-ish
+    window.addEventListener('load', () => {
+      const pos = getRandomPosition();
+      othersBtn.style.left = (window.innerWidth / 2 - 100) + 'px';
+      othersBtn.style.top = (window.innerHeight / 2 + 80) + 'px';
+      othersBtn.style.position = 'absolute';
+    });
+  </script>
+
+</body>
+</html>
