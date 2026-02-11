@@ -20,28 +20,34 @@
     /* MAIN GAME SCREEN - always visible */
     h1#question {
       text-align: center;
-      font-size: clamp(2rem, 8vw, 5rem);
-      margin: 0 20px;
+      font-size: clamp(2.2rem, 7vw, 5rem);
+      margin: 0;
       text-shadow: 0 4px 10px rgba(0,0,0,0.5);
       line-height: 1.15;
-      position: absolute;
-      top: 5%;
-      left: 0;
-      right: 0;
+      position: fixed;
+      top: 30px;
+      left: 10px;
+      right: 10px;
       bottom: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 10px 20px;
+      padding: 10px 15px;
       word-break: break-word;
       white-space: normal;
+      overflow: hidden;
+      z-index: 15;
     }
 
     #progress {
       text-align: center;
-      font-size: 1.6rem;
+      font-size: 1.2rem;
       opacity: 0.8;
-      margin: 5px 0 0;
+      position: fixed;
+      top: 5px;
+      left: 0;
+      right: 0;
+      z-index: 20;
     }
 
     #homeMessage {
@@ -75,8 +81,8 @@
     .poll-container.active { display: flex; }
 
     .option {
-      font-size: 3.5rem;
-      padding: 30px 70px;
+      font-size: clamp(1.8rem, 6vw, 3.5rem);
+      padding: clamp(16px, 4vw, 30px) clamp(30px, 8vw, 70px);
       border-radius: 60px;
       color: white;
       font-weight: bold;
@@ -86,7 +92,7 @@
       box-shadow: 0 8px 25px rgba(0,0,0,0.4);
       position: relative;
       white-space: nowrap;
-      max-width: 42vw;
+      max-width: 44vw;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -106,10 +112,10 @@
 
     #counter {
       position: fixed;
-      top: 15px;
+      bottom: 10px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 1.4rem;
+      font-size: 1.1rem;
       background: rgba(0,0,0,0.5);
       padding: 10px 25px;
       border-radius: 50px;
