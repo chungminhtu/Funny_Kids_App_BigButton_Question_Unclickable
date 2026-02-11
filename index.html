@@ -340,7 +340,7 @@
   <!-- MAIN GAME SCREEN (always visible) -->
   <div id="homeMessage">
     <h2>Quiz Game 🎮</h2>
-    <p>Tap the correct answer to win!</p>
+    <p>Can you pick the right answer?</p>
   </div>
 
   <div id="gameArea">
@@ -390,7 +390,6 @@
     const saved = localStorage.getItem('quizQuestions');
     let questions = saved ? JSON.parse(saved) : [...defaultQuestions];
     let currentIndex = 0;
-    let taps = 0;
     let correctSize = 1;
     let wrongSize = 1;
     let playing = false;
@@ -523,7 +522,6 @@
       }
       playing = true;
       currentIndex = 0;
-      taps = 0;
       correctSize = 1;
       homeMessage.style.display = 'none';
       homeButtons.style.display = 'none';
@@ -570,7 +568,6 @@
     // Correct button RUNS AWAY - kids can't click it!
     correctBtn.addEventListener('click', () => {
       if (!playing) return;
-      taps++;
 
       wrongSize += 0.6;
       correctSize = Math.max(0.1, correctSize - 0.6);
